@@ -4,6 +4,12 @@ pub struct Aftermath {
     pub user_data_ptr: *mut core::ffi::c_void,
 }
 
+impl Default for Aftermath {
+    fn default() -> Self {
+        Self::new(DefaultAftermathCallbacks)
+    }
+}
+
 unsafe impl Send for Aftermath {}
 unsafe impl Sync for Aftermath {}
 
@@ -270,5 +276,16 @@ impl DescriptionBuilder {
         unsafe {
             (self.0).as_ref().unwrap()(0x10000 + index, name.as_ptr());
         }
+    }
+}
+
+#[cfg(test)]
+pub mod test {
+    use super::*;
+
+    #[test]
+    fn test_usage() {
+        let aftermath = Aftermath::new(DefaultAftermathCallbacks);
+        drop(aftermath);
     }
 }
