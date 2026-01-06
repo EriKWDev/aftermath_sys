@@ -89,7 +89,8 @@ pub trait AftermathCallbacks: Send + Sync + 'static {
     fn description(&mut self, describe: &mut DescriptionBuilder);
 }
 
-pub fn default_output_folder() -> (usize, std::path::PathBuf) {
+#[doc(hidden)]
+pub fn default_call_num_and_output_path() -> (usize, std::path::PathBuf) {
     thread_local! {
         pub static DUMP_N: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
     }
@@ -108,6 +109,7 @@ pub fn default_output_folder() -> (usize, std::path::PathBuf) {
         }
     }
 
+    let _ = std::fs::create_dir_all(&path);
     let dump_n = DUMP_N.with(|it| it.fetch_add(1, std::sync::atomic::Ordering::Relaxed));
     (dump_n, path)
 }
@@ -115,8 +117,8 @@ pub fn default_output_folder() -> (usize, std::path::PathBuf) {
 pub struct DefaultAftermathCallbacks;
 impl AftermathCallbacks for DefaultAftermathCallbacks {
     fn dumped(&mut self, dump_data: &[u8]) {
-        let (n, folder) = default_output_folder();
-        let path = folder.join(format!("{n}_gpu_crash_dump.dump"));
+        let (n, path) = default_call_num_and_output_path();
+        let path = path.join(format!("{n}_gpu_crash_dump.dump"));
 
         if let Err(err) = std::fs::write(&path, dump_data) {
             eprintln!(
@@ -130,8 +132,8 @@ impl AftermathCallbacks for DefaultAftermathCallbacks {
     }
 
     fn shader_debug_info(&mut self, data: &[u8]) {
-        let (n, folder) = default_output_folder();
-        let path = folder.join(format!("{n}_shader_debug_info.dump"));
+        let (n, path) = default_call_num_and_output_path();
+        let path = path.join(format!("{n}_shader_debug_info.dump"));
 
         if let Err(err) = std::fs::write(&path, data) {
             eprintln!(
@@ -161,6 +163,7 @@ impl AftermathCallbacks for DefaultAftermathCallbacks {
     }
 }
 
+#[doc(hidden)]
 pub struct AftermathCallbackFunctions {
     pub slf: *mut core::ffi::c_void,
     pub dumped: fn(slf: *mut core::ffi::c_void, dump_data: &[u8]),
@@ -169,11 +172,13 @@ pub struct AftermathCallbackFunctions {
     pub drop: fn(*mut core::ffi::c_void),
 }
 
+#[doc(hidden)]
 pub fn trampoline_dumped<T: AftermathCallbacks>(slf: *mut core::ffi::c_void, dump_data: &[u8]) {
     let mut slf = unsafe { Box::from_raw(slf as *mut T) };
     slf.dumped(dump_data);
     let _ = Box::into_raw(slf);
 }
+#[doc(hidden)]
 pub fn trampoline_shader_debug_info<T: AftermathCallbacks>(
     slf: *mut core::ffi::c_void,
     data: &[u8],
@@ -182,6 +187,7 @@ pub fn trampoline_shader_debug_info<T: AftermathCallbacks>(
     slf.shader_debug_info(data);
     let _ = Box::into_raw(slf);
 }
+#[doc(hidden)]
 pub fn trampoline_description<T: AftermathCallbacks>(
     slf: *mut core::ffi::c_void,
     describe: &mut DescriptionBuilder,
@@ -190,6 +196,7 @@ pub fn trampoline_description<T: AftermathCallbacks>(
     slf.description(describe);
     let _ = Box::into_raw(slf);
 }
+#[doc(hidden)]
 pub fn trampoline_drop<T: AftermathCallbacks>(slf: *mut core::ffi::c_void) {
     let slf = unsafe { Box::from_raw(slf as *mut T) };
     drop(slf);
