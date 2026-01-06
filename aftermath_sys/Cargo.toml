@@ -1,0 +1,9 @@
+[package]
+name = "aftermath-sys"
+version = "5.0.25317"
+edition = "2018"
+
+[dependencies]
+
+[build-dependencies]
+bindgen = "*"

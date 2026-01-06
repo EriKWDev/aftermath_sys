@@ -1,9 +1,8 @@
-[package]
-name = "aftermath-sys"
-version = "0.1.0"
-edition = "2024"
+[workspace]
+resolver = "3"
+members = ["aftermath",
+  "aftermath_sys"
+]
 
-[dependencies]
-
-[build-dependencies]
-bindgen = "*"
+[workspace.dependencies]
+aftermath-sys.path = "./aftermath_sys"

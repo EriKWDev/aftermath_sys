@@ -3,15 +3,8 @@
 version = 4
 
 [[package]]
-name = "aftermath"
-version = "0.1.0"
-dependencies = [
- "aftermath-sys",
-]
-
-[[package]]
 name = "aftermath-sys"
-version = "5.0.25317"
+version = "0.1.0"
 dependencies = [
  "bindgen",
 ]
