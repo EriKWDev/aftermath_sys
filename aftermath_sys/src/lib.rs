@@ -2,4 +2,6 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
+pub const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));

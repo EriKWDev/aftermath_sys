@@ -24,6 +24,7 @@ fn main() {
             "./vendor/current/include/GFSDK_Aftermath_Defines.h",
             "./vendor/current/include/GFSDK_Aftermath_GpuCrashDump.h",
             "./vendor/current/include/GFSDK_Aftermath_GpuCrashDumpDecoding.h",
+            "./vendor/current/include/GFSDK_Aftermath_GpuCrashDumpEditing.h",
         ])
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .use_core()
