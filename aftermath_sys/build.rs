@@ -1,28 +1,24 @@
-pub fn copy_dir_all(
-    src: impl AsRef<std::path::Path>,
-    dst: impl AsRef<std::path::Path>,
-) -> std::io::Result<()> {
-    std::fs::create_dir_all(&dst)?;
-    for entry in std::fs::read_dir(src)? {
-        let entry = entry?;
-        let ty = entry.file_type()?;
-        if ty.is_dir() {
-            copy_dir_all(entry.path(), dst.as_ref().join(entry.file_name()))?;
-        } else {
-            std::fs::copy(entry.path(), dst.as_ref().join(entry.file_name()))?;
-        }
-    }
-    Ok(())
-}
-
 fn main() {
     println!("cargo:rerun-if-changed=./build.rs");
 
     let out_path = std::path::PathBuf::from(std::env::var("OUT_DIR").unwrap());
-    let from_lib_path = std::path::PathBuf::from("./vendor/current/lib")
+    let from_lib_path = std::path::PathBuf::from("./vendor")
+        .join(format!(
+            "NVIDIA_Nsight_Aftermath_SDK_2025.{}",
+            std::env::var("CARGO_PKG_VERSION").unwrap()
+        ))
+        .join("lib")
         .canonicalize()
         .unwrap();
+
     let to_lib_path = out_path.join("lib");
+
+    println!(
+        "cargo:warning={} -> {}",
+        from_lib_path.display(),
+        to_lib_path.display()
+    );
+
     let _ = copy_dir_all(from_lib_path, &to_lib_path).unwrap();
 
     println!("cargo:rustc-link-lib={}", lib_name());
@@ -85,3 +81,20 @@ pub const fn lib_name() -> &'static str {
 //         .write_to_file(out_path.join("bindings.rs"))
 //         .unwrap();
 // }
+
+pub fn copy_dir_all(
+    src: impl AsRef<std::path::Path>,
+    dst: impl AsRef<std::path::Path>,
+) -> std::io::Result<()> {
+    std::fs::create_dir_all(&dst)?;
+    for entry in std::fs::read_dir(src)? {
+        let entry = entry?;
+        let ty = entry.file_type()?;
+        if ty.is_dir() {
+            copy_dir_all(entry.path(), dst.as_ref().join(entry.file_name()))?;
+        } else {
+            std::fs::copy(entry.path(), dst.as_ref().join(entry.file_name()))?;
+        }
+    }
+    Ok(())
+}
