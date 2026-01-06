@@ -101,6 +101,8 @@ pub fn default_call_num_and_output_path() -> (usize, std::path::PathBuf) {
         pub static DUMP_N: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
     }
 
+    let dump_n = DUMP_N.with(|it| it.fetch_add(1, std::sync::atomic::Ordering::Relaxed));
+
     let mut n = 0;
     let base = std::path::PathBuf::from("/tmp");
     let mut path = base.join(format!("aftermath_dump_{n}"));
@@ -108,6 +110,9 @@ pub fn default_call_num_and_output_path() -> (usize, std::path::PathBuf) {
         loop {
             let next = base.join(format!("aftermath_dump_{}", n + 1));
             if !next.exists() {
+                if dump_n == 0 {
+                    path = next;
+                }
                 break;
             }
             path = next;
@@ -116,7 +121,7 @@ pub fn default_call_num_and_output_path() -> (usize, std::path::PathBuf) {
     }
 
     let _ = std::fs::create_dir_all(&path);
-    let dump_n = DUMP_N.with(|it| it.fetch_add(1, std::sync::atomic::Ordering::Relaxed));
+    let path = path.canonicalize().unwrap();
     (dump_n, path)
 }
 
@@ -124,7 +129,7 @@ pub struct DefaultAftermathCallbacks;
 impl AftermathCallbacks for DefaultAftermathCallbacks {
     fn dumped(&mut self, dump_data: &[u8]) {
         let (n, path) = default_call_num_and_output_path();
-        let path = path.join(format!("{n}_gpu_crash_dump.dump"));
+        let path = path.join(format!("{n}_gpu_crash_dump.nv-gpudmp"));
 
         if let Err(err) = std::fs::write(&path, dump_data) {
             eprintln!(
@@ -139,7 +144,7 @@ impl AftermathCallbacks for DefaultAftermathCallbacks {
 
     fn shader_debug_info(&mut self, data: &[u8]) {
         let (n, path) = default_call_num_and_output_path();
-        let path = path.join(format!("{n}_shader_debug_info.dump"));
+        let path = path.join(format!("{n}_shader_debug_info.nv-shader-debug"));
 
         if let Err(err) = std::fs::write(&path, data) {
             eprintln!(
