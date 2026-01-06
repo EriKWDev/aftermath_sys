@@ -4,4 +4,7 @@
 
 pub const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
-include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+// include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+
+pub mod bindings;
+pub use bindings::*;

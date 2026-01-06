@@ -1,0 +1,5 @@
+#include "./current/include/GFSDK_Aftermath.h"
+#include "./current/include/GFSDK_Aftermath_Defines.h"
+#include "./current/include/GFSDK_Aftermath_GpuCrashDump.h"
+#include "./current/include/GFSDK_Aftermath_GpuCrashDumpDecoding.h"
+#include "./current/include/GFSDK_Aftermath_GpuCrashDumpEditing.h"
